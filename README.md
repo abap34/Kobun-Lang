@@ -1,7 +1,3 @@
-# What this
-
-![](https://cdn.discordapp.com/attachments/810478331790491681/842794985131868260/unknown.png)
-
 # Usage
 
 
