@@ -86,7 +86,7 @@ source = join(readlines())
 for line in split(source, "。")
     if line == "!debug"
         global debug = true 
-        println("[info] デバッグモードで実行")
+        println("[info] Run in debug mode.")
         println("=========================")
         continue
     end
