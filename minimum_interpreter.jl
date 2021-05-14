@@ -32,7 +32,7 @@ function func_def(line)
     c_en = findall(s -> s == '」', line)
     arg = join(line[c_st[1] + 1:c_en[1] - 1])
     def = join(line[c_st[2] + 1:c_en[2] - 1])
-    func_hash_name = randstring(30)
+    func_hash_name = randstring('a':'z', 30)
     Field["Functions"][name] = func_hash_name
     tr_expr = "$name($arg) = $def"
     dummy_expr = "$func_hash_name($arg) = $def"
