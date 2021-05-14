@@ -15,7 +15,7 @@
 ```
 
 ```sh
-julia minimum_compiler.jl < Hello_Otono.kobun   
+julia minimum_interpreter.jl < Hello_Otono.kobun   
 ```
 
 
