@@ -1,86 +1,98 @@
+using Random
+
+
 abstract type KobunExpr end
 
-struct VarDef <: KobunExpr
-    type 
-    name
-end
+DEBUG = false
 
-function VarDef(line)
+Field = Dict(
+    "Variable" => Dict(),
+    "Functions" => Dict()
+)
+
+function var_def(line)
     if occursin(r"整数", line)
         _type = Int
-    elseif occursin(r"実数", line)
-        _type = String
     elseif occursin(r"実数", line)
         _type = Float
     else
         error("ignore type")
     end
-    name = collect(line)[3:end-2]
-    return VarDef(type, name)
+    name = collect(line)[4:end-4]
+    Field["Variable"][name] = Nothing
 end
 
-struct FuncDef <: KobunExpr
-    arg
-    def
-    name
+function func_def(line)
+    name = split(line, "「")[1]
+    line = collect(line)
+    c_st = findall(s -> s == '「', line)
+    c_en = findall(s -> s == '」', line)
+    arg = join(line[c_st[1] + 1:c_en[1] - 1])
+    def = join(line[c_st[2] + 1:c_en[2] - 1])
+    func_hash_name = randstring(30)
+    Field["Functions"][name] = func_hash_name
+    eval(Meta.parse(join([func_hash_name, "(", arg, ") = ", def])))
 end
 
-function FuncDef(line)
-    name = split(line, "、")[1]
-    c_st = findall(s -> s == '「', collect(line))
-    c_en = findall(s -> s == '」', collect(line))
-    arg = line[c_st[1]:c_en[1]
-    def = line[c_st[2]:c_en[2]]
-    return FuncDef(arg, def, name)
+function call(line)
+    line = collect(line)
+    c_st = findall(s -> s == '「', line)
+    c_en = findall(s -> s == '」', line)
+    name = join(line[1:c_st[1]-1])
+    arg = join(line[c_st[1]+1:c_en[1]-1])
+    result = eval(Meta.parse(replace(split(Field["Functions"][name], "(")[1] * "($arg)", " " => "")))
+    to = line[c_st[2]+1:c_en[2]-1]
+    Field["Variable"][to] = result
 end
 
-struct FuncCall <: KobunExpr
-    name
-    result
-    to
+function _print(line)
+    line = collect(line)
+    c_st = findall(s -> s == '「', line)
+    c_en = findall(s -> s == '」', line)
+    println("OUT:", Field["Variable"][line[c_st[1]+1:c_en[1]-1]])
 end
 
-function FuncCall(line)
-    
-end
 
-function get_type_of_line(line)
+function trait(line)
     if occursin(r"あり", line)
-        return "var-def"
-    elseif occursin(r"を得て「.+」を返さむ", line)
-        return "func-def"
-    elseif occursin(r".+と言ひて、.+これを得たり", line)
-        return "func-call"
-    elseif occursin(r"あな、「.+」事かな", line)
+        return "var_def"
+    elseif occursin(r"を得て", line)
+        return "func_def"
+    elseif occursin(r"言ひて", line)
+        return "func_call"
+    elseif occursin(r"あな", line)
         return "print"
     else
-        return "ignore format"
+        error("ignore format")
     end
 end
 
 
-function compile(line)
-    
-end
+source = join(readlines())
 
 
-sorce = """
-整数aあり。
-整数bあり。
-文字列cあり。
-
-大殿、「a」を得て「2 * a」を返さむ。
-大殿「10」と言ひて、aこれを得たり。
-
-あな、「a」事かな。
-"""
-
-compiled = ""
-for line in split(sorce, "。")
+for line in split(source, "。")
+    if line == "!debug"
+        global DEBUG = true 
+        println("[info] デバッグモードで実行")
+        continue
+    end
+    line = replace(line, "\n" => "")
     (line == "") && (continue)
-    println("$line : ($(get_type_of_line(line)))")
-    transed_code *= compile(line)
+    pettern = trait(line)
+    if DEBUG
+        println("[read] $line")
+        println("[trait] $pettern")
+    end
+    if pettern == "var_def"
+        var_def(line)
+    elseif pettern == "func_def"
+        func_def(line)
+    elseif pettern == "func_call"
+        call(line)
+    elseif pettern == "print"
+        _print(line)
+    end
+    println()
 end
 
-
-@show  compiled
