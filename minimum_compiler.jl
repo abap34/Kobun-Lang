@@ -3,7 +3,7 @@ using Random
 
 abstract type KobunExpr end
 
-DEBUG = false
+debug = false
 
 Field = Dict(
     "Variable" => Dict(),
@@ -18,7 +18,10 @@ function var_def(line)
     else
         error("ignore type")
     end
-    name = collect(line)[4:end-4]
+    name = join(collect(line)[4:end-3])
+    if debug
+        println("[info] def `$name`")
+    end
     Field["Variable"][name] = Nothing
 end
 
@@ -31,7 +34,12 @@ function func_def(line)
     def = join(line[c_st[2] + 1:c_en[2] - 1])
     func_hash_name = randstring(30)
     Field["Functions"][name] = func_hash_name
-    eval(Meta.parse(join([func_hash_name, "(", arg, ") = ", def])))
+    tr_expr = "$name($arg) = $def"
+    dummy_expr = "$func_hash_name($arg) = $def"
+    if debug
+        println("[info] def function `$tr_expr`")
+    end
+    eval(Meta.parse(dummy_expr))
 end
 
 function call(line)
@@ -41,7 +49,11 @@ function call(line)
     name = join(line[1:c_st[1]-1])
     arg = join(line[c_st[1]+1:c_en[1]-1])
     result = eval(Meta.parse(replace(split(Field["Functions"][name], "(")[1] * "($arg)", " " => "")))
-    to = line[c_st[2]+1:c_en[2]-1]
+    to = join(line[c_st[2]+1:c_en[2]-1])
+    if debug
+        println("[info] call function `$name`, arg: $arg.")
+        println("[info] result = $result. store the result in `$to`")
+    end
     Field["Variable"][to] = result
 end
 
@@ -49,7 +61,7 @@ function _print(line)
     line = collect(line)
     c_st = findall(s -> s == '「', line)
     c_en = findall(s -> s == '」', line)
-    println("OUT:", Field["Variable"][line[c_st[1]+1:c_en[1]-1]])
+    println("OUT:", Field["Variable"][join(line[c_st[1]+1:c_en[1]-1])])
 end
 
 
@@ -73,14 +85,15 @@ source = join(readlines())
 
 for line in split(source, "。")
     if line == "!debug"
-        global DEBUG = true 
+        global debug = true 
         println("[info] デバッグモードで実行")
+        println("=========================")
         continue
     end
     line = replace(line, "\n" => "")
     (line == "") && (continue)
     pettern = trait(line)
-    if DEBUG
+    if debug
         println("[read] $line")
         println("[trait] $pettern")
     end
