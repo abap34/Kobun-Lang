@@ -11,14 +11,7 @@ Field = Dict(
 )
 
 function var_def(line)
-    if occursin(r"整数", line)
-        _type = Int
-    elseif occursin(r"実数", line)
-        _type = Float
-    else
-        error("ignore type")
-    end
-    name = join(collect(line)[4:end-3])
+    name = join(collect(line)[2:end-3])
     if debug
         println("[info] def `$name`")
     end
