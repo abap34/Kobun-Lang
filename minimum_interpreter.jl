@@ -1,6 +1,5 @@
 using Random
 
-
 abstract type KobunExpr end
 
 debug = false
@@ -11,7 +10,7 @@ Field = Dict(
 )
 
 function var_def(line)
-    name = join(collect(line)[2:end-3])
+    name = join(collect(line)[2:end - 3])
     if debug
         println("[info] def `$name`")
     end
@@ -39,10 +38,10 @@ function call(line)
     line = collect(line)
     c_st = findall(s -> s == '「', line)
     c_en = findall(s -> s == '」', line)
-    name = join(line[1:c_st[1]-1])
-    arg = join(line[c_st[1]+1:c_en[1]-1])
+    name = join(line[1:c_st[1] - 1])
+    arg = join(line[c_st[1] + 1:c_en[1] - 1])
     result = eval(Meta.parse(replace(split(Field["Functions"][name], "(")[1] * "($arg)", " " => "")))
-    to = join(line[c_st[2]+1:c_en[2]-1])
+    to = join(line[c_st[2] + 1:c_en[2] - 1])
     if debug
         println("[info] call function `$name`, arg: $arg.")
         println("[info] result = $result. store the result in `$to`")
@@ -54,7 +53,7 @@ function _print(line)
     line = collect(line)
     c_st = findall(s -> s == '「', line)
     c_en = findall(s -> s == '」', line)
-    println("OUT:", Field["Variable"][join(line[c_st[1]+1:c_en[1]-1])])
+    println("OUT:", Field["Variable"][join(line[c_st[1] + 1:c_en[1] - 1])])
 end
 
 
